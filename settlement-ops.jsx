@@ -25,6 +25,7 @@ function SectionHead({ icon, children }) {
 function UploadScreen({ onProcess, error }) {
   const [f1, setF1] = useState(null);
   const [f2, setF2] = useState(null);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("anthropic_api_key") || "");
   const r1 = useRef(null);
   const r2 = useRef(null);
 
@@ -65,11 +66,22 @@ function UploadScreen({ onProcess, error }) {
           {dropZone(f2, setF2, r2, "Administrative Bid / Proposal", "The operational \"How\" — For conflict audit", "📋", true)}
         </div>
 
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: ".06em", textTransform: "uppercase", marginBottom: 6 }}>Anthropic API Key</label>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={e => { setApiKey(e.target.value); localStorage.setItem("anthropic_api_key", e.target.value); }}
+            placeholder="sk-ant-..."
+            style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${BORDER}`, background: SURFACE, color: "#E2E8F0", fontSize: 13, outline: "none" }}
+          />
+        </div>
+
         {error && <div style={{ background: "#7F1D1D", border: "1px solid #EF444444", borderRadius: 10, padding: 12, marginBottom: 18, fontSize: 13, color: "#FCA5A5" }}>⚠ {error}</div>}
 
         <div style={{ textAlign: "center" }}>
-          <button disabled={!f1} onClick={() => onProcess(f1, f2)}
-            style={{ background: !f1 ? "#333" : `linear-gradient(135deg, ${ACCENT}, #6366F1)`, color: "#fff", border: "none", padding: "13px 36px", borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: !f1 ? "not-allowed" : "pointer", opacity: !f1 ? 0.4 : 1 }}>
+          <button disabled={!f1 || !apiKey} onClick={() => onProcess(f1, f2, apiKey)}
+            style={{ background: (!f1 || !apiKey) ? "#333" : `linear-gradient(135deg, ${ACCENT}, #6366F1)`, color: "#fff", border: "none", padding: "13px 36px", borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: (!f1 || !apiKey) ? "not-allowed" : "pointer", opacity: (!f1 || !apiKey) ? 0.4 : 1 }}>
             {f2 ? "Analyze & Cross-Reference →" : "Analyze Settlement →"}
           </button>
         </div>
@@ -360,7 +372,7 @@ export default function App() {
     return "image/" + (ext === "jpg" ? "jpeg" : ext);
   };
 
-  const process = async (f1, f2) => {
+  const process = async (f1, f2, apiKey) => {
     const hasBid = !!f2;
     setStep("processing"); setError(null); setProgress(10); setProgressMsg("Reading documents…");
     try {
@@ -376,9 +388,14 @@ export default function App() {
         mediaType2: f2 ? mediaType(f2) : undefined,
       });
 
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      const resp = await fetch("/api/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 8000,
