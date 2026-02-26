@@ -25,7 +25,7 @@ function SectionHead({ icon, children }) {
 function UploadScreen({ onProcess, error }) {
   const [f1, setF1] = useState(null);
   const [f2, setF2] = useState(null);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem("anthropic_api_key") || "");
+  const [apiKey, setApiKey] = useState(() => import.meta.env.VITE_ANTHROPIC_API_KEY || localStorage.getItem("anthropic_api_key") || "");
   const r1 = useRef(null);
   const r2 = useRef(null);
 
