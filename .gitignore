@@ -6,3 +6,5 @@ __pycache__
 .venv
 backend/uploads/
 backend/settlement_ops.db
+backend/settlement_ops.db-shm
+backend/settlement_ops.db-wal
