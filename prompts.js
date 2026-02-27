@@ -1,6 +1,6 @@
 /**
- * Prompt definitions for Settlement Ops AI analysis.
- * Edit this file to enhance or modify the AI prompts.
+ * @deprecated — Prompt logic has moved to backend/prompts.py.
+ * This file is kept for reference only. The backend is the source of truth.
  */
 
 /**
